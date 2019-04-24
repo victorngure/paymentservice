@@ -52,17 +52,6 @@ class PaymentController extends BaseController
         $payment->save();
     }
 
-    public function queryPayment(Request $request)
-    {
-        $merchant_request_id = $request->merchant_request_id;
-        $checkout_request_id = $request->checkout_request_id;
-        $payment = Payment::where('merchant_request_id', $merchant_request_id)
-                    ->where('checkout_request_id', $checkout_request_id)
-                    ->get();
-
-        return $this->sendResponse($payment);
-    }
-    
     public function paymentCallback(Request $request)
     {
         $merchant_request_id = $request->Body['stkCallback']['MerchantRequestID'];
@@ -73,6 +62,7 @@ class PaymentController extends BaseController
             Payment::where('merchant_request_id', $merchant_request_id)
                 ->where('checkout_request_id', $checkout_request_id)
                 ->update([
+                    'amount' => $request->Body['stkCallback']['CallbackMetadata']['Item'][0]['Value'],
                     'mpesa_receipt_number' => $request->Body['stkCallback']['CallbackMetadata']['Item'][1]['Value'],
                     'mpesa_transaction_date' => $request->Body['stkCallback']['CallbackMetadata']['Item'][3]['Value'],
                     'payment_status' => "sucess"
@@ -90,5 +80,20 @@ class PaymentController extends BaseController
             $data = "Payment Failed";
             return $this->sendResponse($data);
         }     
+    }
+
+    public function queryPayment(Request $request)
+    {
+        $checkout_request_id = $request->checkout_request_id;
+        $payment = Payment::where('checkout_request_id', $checkout_request_id)
+                    ->get();
+
+        return $this->sendResponse($payment);
+    }
+
+    public function test (Request $request)
+    {
+        $checkout_request_id = $request->checkout_request_id;
+        return $this->sendResponse($checkout_request_id);
     }
 }
