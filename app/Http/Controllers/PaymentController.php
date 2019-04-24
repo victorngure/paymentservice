@@ -82,18 +82,12 @@ class PaymentController extends BaseController
         }     
     }
 
-    public function queryPayment(Request $request)
+    public function queryPayment (Request $request)
     {
+        $merchant_request_id =  $request->merchant_request_id;
         $checkout_request_id = $request->checkout_request_id;
-        $payment = Payment::where('checkout_request_id', $checkout_request_id)
-                    ->get();
-
-        return $this->sendResponse($payment);
-    }
-
-    public function test (Request $request)
-    {
-        $checkout_request_id = $request->checkout_request_id;
-        return $this->sendResponse($checkout_request_id);
+        return $this->sendResponse(Payment::where('checkout_request_id', $checkout_request_id)
+            ->where('merchant_request_id', $merchant_request_id)    
+            ->get());
     }
 }
