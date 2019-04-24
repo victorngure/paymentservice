@@ -19,6 +19,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('payment/request', 'PaymentController@paymentRequest');
 
+Route::post('payments/query', 'PaymentController@queryPayment');
+
 Route::post('payment/callback', 'PaymentController@paymentCallback');
 
-Route::post('payment/query', 'PaymentController@queryPayment');
+Route::post('payment/test', 'PaymentController@test');
