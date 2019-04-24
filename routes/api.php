@@ -17,6 +17,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('mpesa/request', 'PaymentController@mpesaRequest');
+Route::post('payment/request', 'PaymentController@paymentRequest');
 
-Route::post('payment/callback', 'PaymentController@mpesaResponse');
+Route::post('payment/callback', 'PaymentController@paymentCallback');

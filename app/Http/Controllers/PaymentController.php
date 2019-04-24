@@ -6,7 +6,7 @@ use App\Payment;
 
 class PaymentController extends BaseController
 {
-    public function mpesaRequest(Request $request)
+    public function paymentRequest(Request $request)
     {
         $mpesa= new \Safaricom\Mpesa\Mpesa();
         $amount = $request->amount;
@@ -51,31 +51,33 @@ class PaymentController extends BaseController
         $payment->save();
     }
 
-    public function mpesaResponse()
+    public function paymentCallback(Request $request)
     {
         if ($request->Body['stkCallback']['ResultCode'] == 0) 
         {
             $payment = Payment::where('merchant_request_id', $request->Body['stkCallback']['MerchantRequestID'])
                 ->where('checkout_request_id', $request->Body['stkCallback']['CheckoutRequestID'])
+                ->where('payment_status', null)
                 ->firstOrFail();
-            $payment->amount = $request->Body['stkCallback']['CallbackMetadata']['Item'][0]['Value'];
-            $payment->mpesa_receipt_number = $request->Body['stkCallback']['CallbackMetadata']['Item'][1]['Value'];
-            $payment->mpesa_transaction_date = $request->Body['stkCallback']['CallbackMetadata']['Item'][3]['Value'];
-            $payment->phone_number = $request->Body['stkCallback']['CallbackMetadata']['Item'][4]['Value'];
-            return $this->sendResponse($request->Body['stkCallback']['ResultDesc']);
+
+            $payment->update([
+                'mpesa_receipt_number' => $request->Body['stkCallback']['CallbackMetadata']['Item'][1]['Value'],
+                'mpesa_transaction_date' => $request->Body['stkCallback']['CallbackMetadata']['Item'][3]['Value'],
+                'payment_status' => 'success',
+            ]);
+
+            $data = ['message' => 'payment complete'];
+            return response()->json($data, 201);
         } 
         else 
         {
             $payment = Payment::where('merchant_request_id', $request->Body['stkCallback']['MerchantRequestID'])
                 ->where('checkout_request_id', $request->Body['stkCallback']['CheckoutRequestID'])
+                ->where('payment_status', 'failed')
                 ->firstOrFail();
-            return $this->sendError("Error with payment request");
-        }    
-    }
 
-    public function getPublicIP()
-    {
-        $ip = file_get_contents('https://api.ipify.org');
-        return $this->sendResponse($ip);
+            $data = ['message' => 'payment error'];
+            return response()->json($data, 501);
+        }
     }
 }

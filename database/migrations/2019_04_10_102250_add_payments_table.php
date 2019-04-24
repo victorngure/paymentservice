@@ -21,6 +21,7 @@ class AddPaymentsTable extends Migration
             $table->string('mpesa_receipt_number')->nullable();
             $table->string('mpesa_transaction_date')->nullable();
             $table->string('phone_number')->nullable();
+            $table->string('payment_status')->nullable();
             $table->timestamps();
         });
     }
