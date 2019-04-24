@@ -29,7 +29,7 @@ class PaymentController extends BaseController
             if($response->ResponseCode == 0)
             {
                 $this->savePayment($response);
-                return $this->sendResponse($response->CustomerMessage);
+                return $this->sendResponse($response);
             }
             else
             {
@@ -67,7 +67,7 @@ class PaymentController extends BaseController
             ]);
 
             $data = ['message' => 'payment complete'];
-            return response()->json($data, 201);
+            return $this->sendResponse($data);
         } 
         else 
         {
@@ -77,7 +77,17 @@ class PaymentController extends BaseController
                 ->firstOrFail();
 
             $data = ['message' => 'payment error'];
-            return response()->json($data, 501);
+            return $this->sendError($data);
         }
+    }
+
+    public function queryPayment(Request $request)
+    {
+        $merchant_request_id = $request->merchant_request_id;
+        $checkout_request_id = $request->checkout_request_id;
+        $payment = Payment::where('merchant_request_id', $merchant_request_id)
+                ->where('checkout_request_id', $checkout_request_id);
+
+        return $this->sendResponse($payment);
     }
 }
